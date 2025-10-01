@@ -18,11 +18,11 @@
   </style>
 </head>
 <body class="bg-light">
-  <div class="container mt-4">
+  <div class="container mt-4 text-center">
     <h1 class="mb-4">Monitor de Sessões Oracle</h1>
 
     <div class="d-flex align-items-center justify-content-between mb-3">
-      <a href="{{ url_for('kill_all') }}" class="btn btn-danger">Matar Todas Sessões</a>
+      <a href="{{ url_for('kill_all') }}" class="btn btn-danger">Matar todas as sessões</a>
 
       {% set total_sessoes = data.rows|length %}
       {% if total_sessoes < 10 %}
