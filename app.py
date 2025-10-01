@@ -37,16 +37,18 @@ order by TYPE,logon_time
 last_result = {"cols": [], "rows": []}
 
 def monitor_sessions():
+    """Executa a query e atualiza cache global."""
     global last_result
     cols, rows = run_query(QUERY)
     last_result = {"cols": cols, "rows": rows}
 
-    # Auto kill se >= 20
+    # Auto kill se >= 20 sessões
     if len(rows) >= 20:
         kill_index = cols.index("KILL")
         for r in rows:
             execute_command(r[kill_index])
 
+# scheduler rodando em background
 scheduler = BackgroundScheduler()
 scheduler.add_job(monitor_sessions, "interval", seconds=1)
 scheduler.start()
@@ -57,10 +59,18 @@ def index():
 
 @app.route("/kill_all")
 def kill_all():
+    """Mata todas as sessões do cache atual."""
     if last_result["rows"]:
         kill_index = last_result["cols"].index("KILL")
         for r in last_result["rows"]:
             execute_command(r[kill_index])
+    return redirect(url_for("index"))
+
+@app.route("/kill/<sid>/<serial>")
+def kill_session(sid, serial):
+    """Mata uma sessão específica (SID,SERIAL)."""
+    cmd = f"ALTER SYSTEM KILL SESSION '{sid},{serial}' IMMEDIATE"
+    execute_command(cmd)
     return redirect(url_for("index"))
 
 if __name__ == "__main__":
