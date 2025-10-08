@@ -175,7 +175,7 @@ Este projeto está licenciado sob a **MIT License** – veja o arquivo [LICENSE]
 
 ---
 
-## 🧩 Próximos Passas (Roadmap)
+## 🧩 Próximos Passos (Roadmap)
 
 - [ ] Adicionar filtro de sessões por usuário  
 - [ ] Implementar gráficos de consumo de recursos  
