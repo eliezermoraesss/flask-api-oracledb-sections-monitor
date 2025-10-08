@@ -185,4 +185,4 @@ Este projeto está licenciado sob a **MIT License** – veja o arquivo [LICENSE]
 
 ---
 
-⭐ Se este projeto te ajudou, **deixa uma estrela no repositão**!
+⭐ Se este projeto te ajudou, **deixa uma estrela no repositório**!
