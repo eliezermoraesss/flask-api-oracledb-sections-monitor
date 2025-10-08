@@ -3,7 +3,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.11-blue?logo=python)
 ![Flask](https://img.shields.io/badge/Flask-2.3-black?logo=flask)
-![Bootstrap](https.md.io/badge/Bootstrap-5.3-purple?logo=bootstrap)
+![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-purple?logo=bootstrap)
 ![Oracle](https://img.shields.io/badge/Oracle-Database-red?logo=oracle)
 ![License](https://img.shields.io/badge/License-MIT-green)
 
@@ -129,13 +129,33 @@ A aplicação apresenta uma interface limpa e responsiva, com:
 ## 🧾 Exemplo de Query Usada
 
 ```sql
-SELECT 'ALTER SYSTEM KILL SESSION '|| ''''||s.sid||','||s.serial#||'''' ||' immediate;' AS KILL,
-       s.username, s.machine, s.event, s.status, s.program
-FROM gv$session s, gv$process p
+select 'ALTER SYSTEM KILL SESSION '|| ''''||s.sid||','||s.serial#||'''' ||' immediate;' AS KILL, 
+       s.sql_address,
+       s.inst_id,
+       s.sid,
+       s.serial#,
+       s.username,
+       p.spid,
+       s.osuser,
+       s.EVENT,
+       trunc(s.last_call_et/3600) horas,
+       trunc(s.last_call_et/60) minutos,
+       s.machine,
+       s.client_info,
+       s.program,
+       to_char(s.LOGON_TIME,'dd/mm/yyyy hh24:mi:ss') LOGON_TIME,
+       sysdate HORA_ATUAL,
+       s.PREV_SQL_ADDR,
+       s.paddr,
+       s.taddr,
+       s.machine
+from gv$session s, gv$process p
 WHERE s.paddr = p.addr
-  AND s.status = 'ACTIVE'
-  AND s.username IS NOT NULL
-  AND TYPE <> 'BACKGROUND';
+     and s.inst_id = p.inst_id
+     and s.status='ACTIVE'
+     and s.username is not null
+     and TYPE<> 'BACKGROUND'
+order by TYPE,logon_time
 ```
 
 ---
