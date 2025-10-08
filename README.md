@@ -165,9 +165,8 @@ order by TYPE,logon_time
 **Eliezer Moraes**  
 Desenvolvedor de Software & Analista de Sistemas  
 
-[![GitHub](https://img.shields.io/badge/GitHub-EliezerMoraes-black?logo=github)](https://github.com/SEU_USUARIO)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-EliezerMoraes-blue?logo=linkedin)](https://www.linkedin.com/in/SEU_PERFIL)
-
+[![GitHub](https://img.shields.io/badge/GitHub-EliezerMoraes-black?logo=github)](https://github.com/eliezermoraes)  
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-EliezerMoraes-blue?logo=linkedin)](https://www.linkedin.com/in/eliezermoraes)
 ---
 
 ## 📜 Licença
