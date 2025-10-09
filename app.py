@@ -1,6 +1,6 @@
-from flask import Flask, render_template, redirect, url_for
+from flask import Flask, render_template, redirect, url_for, request, jsonify
 from apscheduler.schedulers.background import BackgroundScheduler
-from db import run_query, execute_command
+from db import run_query, execute_command, get_connection
 
 app = Flask(__name__)
 
@@ -54,7 +54,7 @@ def monitor_sessions():
 
 # Scheduler em background para monitorar automaticamente
 scheduler = BackgroundScheduler()
-scheduler.add_job(monitor_sessions, "interval", seconds=3)  # a cada 3s
+scheduler.add_job(monitor_sessions, "interval", seconds=1)  # a cada 3s
 scheduler.start()
 
 
@@ -65,21 +65,33 @@ def index():
 
 @app.route("/kill_all")
 def kill_all():
-    """Mata todas as sessões listadas atualmente."""
-    if last_result["rows"]:
-        kill_index = last_result["cols"].index("KILL")
-        for r in last_result["rows"]:
-            cmd = r[kill_index].strip().rstrip(";")  # remove ; do final
-            execute_command(cmd)
+    connection = get_connection()
+    cursor = connection.cursor()
+    cursor.execute("""
+        SELECT SID, SERIAL#, USERNAME FROM V$SESSION
+        WHERE USERNAME IS NOT NULL AND USERNAME != 'SYSTEM'
+    """)
+    for sid, serial, user in cursor.fetchall():
+        cursor.execute(f"ALTER SYSTEM KILL SESSION '{sid},{serial}'immediate")
+    connection.commit()
     return redirect(url_for("index"))
 
 
 @app.route("/kill/<sid>/<serial>")
 def kill_session(sid, serial):
-    """Mata uma sessão específica (SID,SERIAL)."""
-    cmd = f"ALTER SYSTEM KILL SESSION '{sid},{serial}' IMMEDIATE"
-    execute_command(cmd)
-    return redirect(url_for("index"))
+    username = request.args.get("username", "").upper()
+
+    if username == "SYSTEM":
+        return jsonify({"error": "Sessão SYSTEM é protegida e não pode ser encerrada."}), 403
+
+    try:
+        connection = get_connection()
+        cursor = connection.cursor()
+        cursor.execute(f"ALTER SYSTEM KILL SESSION '{sid},{serial}' IMMEDIATE")
+        connection.commit()
+        return redirect(url_for("index"))
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 
 if __name__ == "__main__":
