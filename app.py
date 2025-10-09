@@ -5,7 +5,7 @@ from db import run_query, execute_command
 app = Flask(__name__)
 
 QUERY = """
-select 'ALTER SYSTEM KILL SESSION '|| ''''||s.sid||','||s.serial#||'''' ||' immediate;' AS KILL, 
+select 'ALTER SYSTEM KILL SESSION '|| ''''||s.sid||','||s.serial#||'''' ||' IMMEDIATE' AS KILL, 
        s.sql_address,
        s.inst_id,
        s.sid,
@@ -31,40 +31,48 @@ WHERE s.paddr = p.addr
      and s.status='ACTIVE'
      and s.username is not null
      and TYPE<> 'BACKGROUND'
-order by TYPE,logon_time
+order by TYPE, logon_time
 """
 
+# Armazena o último resultado da query (cache em memória)
 last_result = {"cols": [], "rows": []}
 
+
 def monitor_sessions():
-    """Executa a query e atualiza cache global."""
+    """Executa a query e atualiza o cache global."""
     global last_result
     cols, rows = run_query(QUERY)
     last_result = {"cols": cols, "rows": rows}
 
-    # Auto kill se >= 20 sessões
+    # Auto kill se >= 20 sessões ativas
     if len(rows) >= 20:
         kill_index = cols.index("KILL")
         for r in rows:
-            execute_command(r[kill_index])
+            cmd = r[kill_index].strip().rstrip(";")  # remove ; e espaços extras
+            execute_command(cmd)
 
-# scheduler rodando em background
+
+# Scheduler em background para monitorar automaticamente
 scheduler = BackgroundScheduler()
-scheduler.add_job(monitor_sessions, "interval", seconds=1)
+scheduler.add_job(monitor_sessions, "interval", seconds=3)  # a cada 3s
 scheduler.start()
+
 
 @app.route("/")
 def index():
     return render_template("index.html", data=last_result)
 
+
 @app.route("/kill_all")
 def kill_all():
-    """Mata todas as sessões do cache atual."""
+    """Mata todas as sessões listadas atualmente."""
     if last_result["rows"]:
         kill_index = last_result["cols"].index("KILL")
         for r in last_result["rows"]:
-            execute_command(r[kill_index])
+            cmd = r[kill_index].strip().rstrip(";")  # remove ; do final
+            execute_command(cmd)
     return redirect(url_for("index"))
+
 
 @app.route("/kill/<sid>/<serial>")
 def kill_session(sid, serial):
@@ -72,6 +80,7 @@ def kill_session(sid, serial):
     cmd = f"ALTER SYSTEM KILL SESSION '{sid},{serial}' IMMEDIATE"
     execute_command(cmd)
     return redirect(url_for("index"))
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
