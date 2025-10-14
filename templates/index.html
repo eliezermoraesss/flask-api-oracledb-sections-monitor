@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Monitor Sessões Oracle</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <meta http-equiv="refresh" content="1">
+  <meta http-equiv="refresh" content="2">
   <style>
     table.table-sm td,
     table.table-sm th {
@@ -31,11 +31,17 @@
   <div class="container mt-4 text-center">
     <h1 class="mb-4">Monitor de Sessões Oracle</h1>
 
-    <div class="d-flex align-items-center justify-content-between mb-3">
-      <!-- Matar todas as sessões exceto SYSTEM -->
-      <a href="{{ url_for('kill_all') }}" class="btn btn-danger">Matar todas as sessões</a>
+    {% set total_sessoes = data.rows|length %}
 
-      {% set total_sessoes = data.rows|length %}
+    <div class="d-flex align-items-center justify-content-between mb-3">
+
+      <!-- Mostrar botão apenas se houver 20 ou mais sessões -->
+      {% if total_sessoes >= 20 %}
+        <a href="{{ url_for('kill_all') }}" class="btn btn-danger">
+          🚨 Matar todas as sessões ({{ total_sessoes }})
+        </a>
+      {% endif %}
+
       {% if total_sessoes < 10 %}
         <span id="sessionCount" class="badge bg-success">Sessões Ativas: {{ total_sessoes }}</span>
       {% elif total_sessoes < 20 %}

@@ -34,7 +34,7 @@ WHERE s.paddr = p.addr
 order by TYPE, logon_time
 """
 
-# Armazena o último resultado da query (cache em memória)
+# Cache global de resultados
 last_result = {"cols": [], "rows": []}
 
 
@@ -44,17 +44,20 @@ def monitor_sessions():
     cols, rows = run_query(QUERY)
     last_result = {"cols": cols, "rows": rows}
 
-    # Auto kill se >= 20 sessões ativas
+    # Exemplo opcional: Auto kill se >= 20 sessões
+    # (deixe comentado se quiser só o botão manual)
+    """
     if len(rows) >= 20:
         kill_index = cols.index("KILL")
         for r in rows:
-            cmd = r[kill_index].strip().rstrip(";")  # remove ; e espaços extras
+            cmd = r[kill_index].strip().rstrip(";")
             execute_command(cmd)
+    """
 
 
-# Scheduler em background para monitorar automaticamente
+# Scheduler para monitoramento automático
 scheduler = BackgroundScheduler()
-scheduler.add_job(monitor_sessions, "interval", seconds=1)  # a cada 3s
+scheduler.add_job(monitor_sessions, "interval", seconds=2)
 scheduler.start()
 
 
@@ -65,15 +68,34 @@ def index():
 
 @app.route("/kill_all")
 def kill_all():
-    connection = get_connection()
-    cursor = connection.cursor()
-    cursor.execute("""
-        SELECT SID, SERIAL#, USERNAME FROM V$SESSION
-        WHERE USERNAME IS NOT NULL AND USERNAME != 'SYSTEM'
-    """)
-    for sid, serial, user in cursor.fetchall():
-        cursor.execute(f"ALTER SYSTEM KILL SESSION '{sid},{serial}'immediate")
-    connection.commit()
+    """Mata todas as sessões ativas (exceto SYSTEM)."""
+    global last_result
+
+    if not last_result["rows"]:
+        monitor_sessions()  # Garante que os dados estejam atualizados
+
+    cols = last_result["cols"]
+    rows = last_result["rows"]
+
+    if not rows:
+        return redirect(url_for("index"))
+
+    kill_idx = cols.index("KILL")
+    user_idx = cols.index("USERNAME")
+
+    killed_count = 0
+
+    for r in rows:
+        username = str(r[user_idx]).upper()
+        if username != "SYSTEM":  # Protege usuário SYSTEM
+            cmd = r[kill_idx].strip().rstrip(";")
+            try:
+                execute_command(cmd)
+                killed_count += 1
+            except Exception as e:
+                print(f"Erro ao matar sessão de {username}: {e}")
+
+    print(f"{killed_count} sessões foram encerradas.")
     return redirect(url_for("index"))
 
 
