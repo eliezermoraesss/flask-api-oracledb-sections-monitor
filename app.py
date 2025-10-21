@@ -57,7 +57,7 @@ def monitor_sessions():
 
 # Scheduler para monitoramento automático
 scheduler = BackgroundScheduler()
-scheduler.add_job(monitor_sessions, "interval", seconds=2)
+scheduler.add_job(monitor_sessions, "interval", seconds=1)
 scheduler.start()
 
 
@@ -117,4 +117,4 @@ def kill_session(sid, serial):
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0", port=8082, debug=True)
