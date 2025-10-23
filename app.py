@@ -109,7 +109,7 @@ def kill_session(sid, serial):
     try:
         connection = get_connection()
         cursor = connection.cursor()
-        cursor.execute(f"ALTER SYSTEM KILL SESSION '{sid},{serial}' IMMEDIATE")
+        cursor.execute(f"ALTER SYSTEM KILL SESSION '{sid},{serial}'immediate")
         connection.commit()
         return redirect(url_for("index"))
     except Exception as e:
