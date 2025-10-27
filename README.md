@@ -8,6 +8,13 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 ---
+<p align="center">
+  <img src="assets/images/oracle-kill-session-01.gif" alt="Exemplo 1 - Oracle Kill Sessions Monitor" width="700"/>
+</p>
+
+<p align="center">
+  <img src="assets/images/oracle-kill-session-02.gif" alt="Exemplo 2 - Oracle Kill Sessions Monitor" width="700"/>
+</p>
 
 ## 📘 Sobre o Projeto
 
