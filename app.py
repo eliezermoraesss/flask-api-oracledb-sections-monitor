@@ -46,13 +46,13 @@ def monitor_sessions():
 
     # Exemplo opcional: Auto kill se >= 20 sessões
     # (deixe comentado se quiser só o botão manual)
-
+    """
     if len(rows) >= 20:
         kill_index = cols.index("KILL")
         for r in rows:
             cmd = r[kill_index].strip().rstrip(";")
             execute_command(cmd)
-
+    """
 
 
 # Scheduler para monitoramento automático
