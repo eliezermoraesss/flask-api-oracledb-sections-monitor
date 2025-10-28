@@ -57,7 +57,7 @@ def monitor_sessions():
 
 # Scheduler para monitoramento automático
 scheduler = BackgroundScheduler()
-scheduler.add_job(monitor_sessions, "interval", seconds=1)
+scheduler.add_job(monitor_sessions, "interval", seconds=4)
 scheduler.start()
 
 
